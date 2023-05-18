@@ -2,6 +2,8 @@ import pandas as pd
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 
 # Read email details from Excel sheet
 data = pd.read_excel('email_details.xlsx')
@@ -14,8 +16,8 @@ with open('email_body.txt', 'r') as file:
     common_body = file.read()
 
 # Gmail account details
-sender_email = 'your_email@gmail.com'
-password = 'your_password'
+sender_email = 'youremail@gmail.com'
+password = 'yourpassword'
 
 # SMTP server configuration
 smtp_server = 'smtp.gmail.com'
@@ -34,6 +36,16 @@ for i in range(len(email_list)):
 
     # Add the body of the email
     message.attach(MIMEText(personalized_body, 'plain'))
+
+    # Attach the file
+    attachment_file = 'resume.pdf'
+    with open(attachment_file, 'rb') as attachment:
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(attachment.read())
+
+    encoders.encode_base64(part)
+    part.add_header('Content-Disposition', f'attachment; filename={attachment_file}')
+    message.attach(part)
 
     # Connect to the SMTP server and send the email
     server = smtplib.SMTP(smtp_server, smtp_port)
